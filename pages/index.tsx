@@ -1,8 +1,16 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import Header from '../components/Header'
+import { sanityClient, imageUrl } from '../sanity';
+import { Post } from '../typings';
 
-const Home: NextPage = () => {
+
+interface Props {
+  posts: [Post];
+}
+
+function Home({ posts }: Props) {
+  console.log(posts);
   return (
     <div className="max-w-7xl mx-auto">
       <Head>
@@ -17,10 +25,33 @@ const Home: NextPage = () => {
           <h2>It's easy and free to post your thinking on any topic and connect with mlllions of readers</h2>
         </div>
         <img src="https://cdn.worldvectorlogo.com/logos/medium-1.svg" className='hidden md:inline-flex md:h-32 lg:h-52 px-10' />
-        
+
       </div>
     </div>
-  )
+  );
 }
 
 export default Home
+
+export const getServerSideProps = async() => {
+  const query = `
+  *[_type == 'post'] {
+    _id,
+    title,
+    slug,
+    author -> {
+     name,
+     image
+    },
+    description,
+    mainImage,
+    body
+  }`;
+
+  const posts = await sanityClient.fetch(query)
+  return {
+    props: {
+      posts
+    }
+  }
+}
